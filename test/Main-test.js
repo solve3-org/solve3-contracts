@@ -5,6 +5,7 @@ const {
 const { anyValue } = require("@nomicfoundation/hardhat-chai-matchers/withArgs");
 const { expect } = require("chai");
 const { encodeBackendProof, keccak256, encodeChainProof, signMsg, versionsHash } = require("../lib/web3-func");
+const { mineBlock } = require("./lib/hardhat-func");
 
 describe("Solve3", function () {
   async function deployVerifierFixture() {
@@ -77,7 +78,7 @@ describe("Solve3", function () {
       const msg = await keccak256(encoded);
 
       const sig = await signMsg(account1, msg);
-      await verifier.setTester(owner.address, true);
+
       const proof = encodeChainProof(
         {
           s: sig.s,
@@ -89,9 +90,12 @@ describe("Solve3", function () {
           ad: ad,
         }
       )
+
+      await mineBlock();
+
       const isVerified = await verifier.callStatic.verifyProof(version, proof);
-      console.log(isVerified);
-     // expect(isVerified).to.equal(true);
+
+      expect(isVerified[2]).to.equal(true);
     })
 
   })
