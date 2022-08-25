@@ -26,7 +26,6 @@ contract Solve3Verifier is ISolve3Verifier, Initializable, OwnableUpgradeable {
 
     mapping(address => uint256) public nonces;
     mapping(address => bool) public signer;
-    mapping(address => bool) public tester;
     mapping(bytes32 => Ad) public ads;
     uint256 public noAdAmount;
 
@@ -97,10 +96,9 @@ contract Solve3Verifier is ISolve3Verifier, Initializable, OwnableUpgradeable {
         emit AdRemoved(_id);
     }
 
-
     // _data:
-    // s,r,v,nonce,timestamp,account, campaign
-    // bytes32,bytes32,uint8,uint256,uint256,address, bytes32
+    // s,r,v,nonce,timestamp,account,ad
+    // bytes32,bytes32,uint8,uint256,uint256,address,bytes32
     function verifyProof(bytes32 _version, bytes memory _proof)
         public
         override
@@ -119,16 +117,7 @@ contract Solve3Verifier is ISolve3Verifier, Initializable, OwnableUpgradeable {
         ProofV0 memory proof = abi.decode(_proof, (ProofV0));
 
         bool verified = false;
-
-        require(
-            tester[msg.sender],
-            "Solve3Verifier: Only tester can call this function"
-        );
-
-        address signerAddress = recoverSigner(
-            msg.sender,
-            proof
-        );
+        address signerAddress = recoverSigner(msg.sender, proof);
 
         if (
             nonces[proof.account] == proof.nonce &&
@@ -160,7 +149,7 @@ contract Solve3Verifier is ISolve3Verifier, Initializable, OwnableUpgradeable {
         } else {
             transferAmount = noAdAmount;
         }
-        if (token.balanceOf(address(this)) >= transferAmount) {
+        if (token.balanceOf(address(this)) >= transferAmount && transferAmount > 0) {
             token.safeTransfer(_account, transferAmount);
         }
     }
@@ -196,7 +185,7 @@ contract Solve3Verifier is ISolve3Verifier, Initializable, OwnableUpgradeable {
         return ecrecover(prefixedHashMessage, _proof.v, _proof.r, _proof.s);
     }
 
-    function createMessage(        
+    function createMessage(
         uint256 _nonce,
         uint256 _timestamp,
         address _contract,
@@ -204,15 +193,7 @@ contract Solve3Verifier is ISolve3Verifier, Initializable, OwnableUpgradeable {
         bytes32 _ad
     ) internal pure returns (bytes32) {
         return
-            keccak256(
-                abi.encode(
-                    _nonce,
-                    _timestamp,
-                    _contract,
-                    _account,
-                    _ad
-                )
-            );
+            keccak256(abi.encode(_nonce, _timestamp, _contract, _account, _ad));
     }
 
     function getTimestamp() external view override returns (uint256) {
@@ -266,34 +247,11 @@ contract Solve3Verifier is ISolve3Verifier, Initializable, OwnableUpgradeable {
         emit SignerChanged(_account, _flag);
     }
 
-    function isTester(address _account) external view returns (bool) {
-        return tester[_account];
-    }
-
-    function setTester(address _account, bool _flag) external onlyOwner {
-        _setTester(_account, _flag);
-    }
-
-    function setMultipleTester(address[] memory _account, bool _flag)
-        external
-        onlyOwner
-    {
-        for (uint256 i = 0; i < _account.length; i++) {
-            _setTester(_account[i], _flag);
-        }
-    }
-
-    function _setTester(address _account, bool _flag) internal {
-        tester[_account] = _flag;
-        emit TesterChanged(_account, _flag);
-    }
-
     function setNoAdAmount(uint256 _amount) external onlyOwner {
         noAdAmount = _amount;
         emit NoAdAmountChanged(_amount);
     }
 
-    event TesterChanged(address _account, bool _flag);
     event SignerChanged(address indexed signer, bool flag);
     event AdAdded(
         bytes32 id,
