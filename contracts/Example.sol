@@ -14,9 +14,9 @@ contract Example is Ownable, Solve3Verify {
         number = _number;
     }
 
-    function setNumber(ISolve3Verifier.Message memory _msg, uint256 _number)
+    function setNumber(bytes memory _proof, uint256 _number)
         public
-        verifyOld(_msg)
+        verify(_proof)
     {
         _setNumber(_number);
     }

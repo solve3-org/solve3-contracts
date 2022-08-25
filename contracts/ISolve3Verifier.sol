@@ -4,23 +4,23 @@ pragma solidity 0.8.7;
 
 interface ISolve3Verifier {
 
-    struct Message {
-        address account;
-        uint256 timestamp;
-        uint256 nonce;
-        bytes data;
-        uint8 v;
-        bytes32 r;
+    struct ProofV0 {
         bytes32 s;
+        bytes32 r;
+        uint8 v;
+        uint256 nonce;
+        uint256 timestamp;
+        address account;
+        bytes32 ad;
     }
     
     function initialize(address _signer, address _token) external;
 
-    function verifyMessage(Message memory _msg) external returns (bool);
+    function verifyProof(bytes32 version, bytes memory _proof) external returns (address account, uint256 timestamp, bool verified);
 
     function recoverSigner(
         address _contract,
-        Message memory _msg
+        ProofV0 memory _proof
     ) external pure returns (address);
 
     function getTimestamp() external view returns (uint256);

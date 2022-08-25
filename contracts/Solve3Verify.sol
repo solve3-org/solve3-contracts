@@ -4,6 +4,7 @@ pragma solidity 0.8.7;
 import "./ISolve3Verifier.sol";
 
 abstract contract Solve3Verify {
+    string public constant VERSION = "SOLVE3.V0";
     ISolve3Verifier public immutable verifier;
     bool public solve3Disabled = false;
     uint256 public validFromTimestamp;
@@ -14,30 +15,36 @@ abstract contract Solve3Verify {
         validFromTimestamp = block.timestamp;
     }
 
-    modifier verifyOld(ISolve3Verifier.Message memory _msg) {
+    modifier verify(bytes memory _proof) {
         if (!solve3Disabled) {
+            (address account, uint256 timestamp, bool verified) = verifier
+            .verifyProof(keccak256(abi.encodePacked(VERSION)), _proof);
+            
             require(
-                _msg.account == msg.sender,
+                verified,
+                "Solve3Verify: Unable to verify message"
+            );
+            require(
+                account == msg.sender,
                 "Solve3Verify: Sender and solver do not match"
             );
             require(
-                _msg.timestamp >= validFrom(),
+                timestamp >= validFrom(),
                 "Solve3Verify: Message was signed too early"
             );
             require(
-                _msg.timestamp + validPeriod() >= block.timestamp,
+                timestamp + validPeriod() >= block.timestamp,
                 "Solve3Verify: Signature is no longer valid"
-            );
-            require(
-                verifier.verifyMessage(_msg),
-                "Solve3Verify: Unable to verify message"
             );
         }
         _;
     }
 
     modifier solve3IsDisabled() {
-        require(solve3Disabled, "Solution3Verify: Verification is not disabled");
+        require(
+            solve3Disabled,
+            "Solution3Verify: Verification is not disabled"
+        );
         _;
     }
 
@@ -46,11 +53,11 @@ abstract contract Solve3Verify {
         _;
     }
 
-    function validFrom() public view virtual returns(uint256) {
+    function validFrom() public view virtual returns (uint256) {
         return validFromTimestamp;
     }
 
-    function validPeriod() public view virtual returns(uint256) {
+    function validPeriod() public view virtual returns (uint256) {
         return validPeriodSeconds;
     }
 
@@ -65,7 +72,9 @@ abstract contract Solve3Verify {
         validFromTimestamp = _validFromTimestamp;
     }
 
-    function setValidPeriodSeconds(uint256 _validPeriodSeconds) external virtual;
+    function setValidPeriodSeconds(uint256 _validPeriodSeconds)
+        external
+        virtual;
 
     function _setValidPeriodSeconds(uint256 _validPeriodSeconds) internal {
         validPeriodSeconds = _validPeriodSeconds;
