@@ -54,8 +54,7 @@ contract Solve3Verifier is ISolve3Verifier, Initializable, OwnableUpgradeable {
         bytes32 identifier = keccak256(abi.encodePacked(_ipfs));
 
         require(
-            ads[identifier].creator == address(0) ||
-                ads[identifier].creator == _creator,
+            ads[identifier].creator == address(0),
             "Ad already exists or wrong creator"
         );
 
@@ -67,11 +66,12 @@ contract Solve3Verifier is ISolve3Verifier, Initializable, OwnableUpgradeable {
 
         Ad storage ad = ads[identifier];
 
+        // todo add multiple ads with one ipfs hash
         ad.id = identifier;
         ad.creator = _creator;
         ad.ipfs = _ipfs;
-        ad.totalSolves += _totalSolves;
-        ad.amountPerSolve += _amountPerSolve;
+        ad.totalSolves = _totalSolves;
+        ad.amountPerSolve = _amountPerSolve;
 
         adSet.add(identifier);
 
