@@ -18,7 +18,7 @@ abstract contract Solve3Verify {
     modifier verify(bytes memory _proof) {
         if (!solve3Disabled) {
             (address account, uint256 timestamp, bool verified) = verifier
-            .verifyProof(keccak256(abi.encodePacked(VERSION)), _proof);
+            .verifyProof(_version(), _proof);
             
             require(
                 verified,
@@ -78,6 +78,10 @@ abstract contract Solve3Verify {
 
     function _setValidPeriodSeconds(uint256 _validPeriodSeconds) internal {
         validPeriodSeconds = _validPeriodSeconds;
+    }
+
+    function _version() internal pure returns(bytes32) {
+        return keccak256(abi.encodePacked(VERSION));
     }
 
     event Paused(bool _paused);
