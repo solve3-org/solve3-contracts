@@ -675,7 +675,4 @@ describe("Solve3", function () {
      expect(await verifier.getAdSet()).to.have.lengthOf(0);
     })
    })
-
-
-
 })
