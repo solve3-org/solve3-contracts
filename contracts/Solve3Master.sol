@@ -2,13 +2,13 @@
 
 pragma solidity 0.8.7;
 
-import "./ISolve3Verifier.sol";
+import "./ISolve3Master.sol";
 import "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
 import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 import "@openzeppelin/contracts/utils/structs/EnumerableSet.sol";
 
-contract Solve3Verifier is ISolve3Verifier, Initializable, OwnableUpgradeable {
+contract Solve3Master is ISolve3Master, Initializable, OwnableUpgradeable {
     using SafeERC20 for IERC20;
     using EnumerableSet for EnumerableSet.Bytes32Set;
 
@@ -108,9 +108,9 @@ contract Solve3Verifier is ISolve3Verifier, Initializable, OwnableUpgradeable {
     {
         require(
             _version == keccak256(abi.encodePacked("SOLVE3.V0")),
-            "Solve3Verifier: Wrong version (0)"
+            "Solve3Master: Wrong version (0)"
         );
-        require(_proof.length == 224, "Solve3Verifier: Invalid proof length");
+        require(_proof.length == 224, "Solve3Master: Invalid proof length");
 
         ProofV0 memory proof = abi.decode(_proof, (ProofV0));
 

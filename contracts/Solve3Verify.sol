@@ -1,23 +1,23 @@
 //SPDX-License-Identifier: MIT
 
 pragma solidity 0.8.7;
-import "./ISolve3Verifier.sol";
+import "./ISolve3Master.sol";
 
 abstract contract Solve3Verify {
     string public constant VERSION = "SOLVE3.V0";
-    ISolve3Verifier public immutable verifier;
+    ISolve3Master public immutable solve3Master;
     bool public solve3Disabled = false;
     uint256 public validFromTimestamp;
     uint256 public validPeriodSeconds = 300;
 
-    constructor(address _verifier) {
-        verifier = ISolve3Verifier(_verifier);
+    constructor(address _solve3Master) {
+        solve3Master = ISolve3Master(_solve3Master);
         validFromTimestamp = block.timestamp;
     }
 
     modifier verify(bytes memory _proof) {
         if (!solve3Disabled) {
-            (address account, uint256 timestamp, bool verified) = verifier
+            (address account, uint256 timestamp, bool verified) = solve3Master
             .verifyProof(_version(), _proof);
             
             require(

@@ -15,19 +15,19 @@ describe("Solve3", function () {
     const tokenFactory = await ethers.getContractFactory("Token");
     const token = await tokenFactory.deploy("Solve3", "SLV");
 
-    const verifierFactory = await ethers.getContractFactory("Solve3Verifier");
-    const verifier = await verifierFactory.deploy();
-    await verifier.initialize(account1.address, token.address);
+    const solve3MasterFactory = await ethers.getContractFactory("Solve3Master");
+    const solve3Master = await solve3MasterFactory.deploy();
+    await solve3Master.initialize(account1.address, token.address);
 
-    await token.transfer(verifier.address, ethers.utils.parseEther("1000000"));
+    await token.transfer(solve3Master.address, ethers.utils.parseEther("1000000"));
 
     const example1Factory = await ethers.getContractFactory("Example");
-    const example1 = await example1Factory.deploy(verifier.address);
+    const example1 = await example1Factory.deploy(solve3Master.address);
 
     const example2Factory = await ethers.getContractFactory("Example2");
-    const example2 = await example2Factory.deploy(verifier.address);
+    const example2 = await example2Factory.deploy(solve3Master.address);
 
-    return { verifier, example1, example2, owner, account1, account2, account3, token };
+    return { verifier: solve3Master, example1, example2, owner, account1, account2, account3, token };
   }
 
   let verifier, example1, example2, owner, account1, account2, account3, token;
@@ -38,7 +38,7 @@ describe("Solve3", function () {
     ));
   });
 
-  describe("Verifier", function () {
+  describe("Master", function () {
 
     it("should have the right owner", async () => {
       expect(await verifier.owner()).to.equal(owner.address);
@@ -578,7 +578,7 @@ describe("Solve3", function () {
 
   })
 
-  describe("Verify - Ads", function () {
+  describe("Master - Ads", function () {
 
     let _ID = "0x02b95aae64d92daf4dc7a044b7fa8362dfed496017a7352fe6864dba0faff72c";
     

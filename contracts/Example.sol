@@ -8,7 +8,7 @@ import "@openzeppelin/contracts/access/Ownable.sol";
 contract Example is Ownable, Solve3Verify {
     uint256 public number;
 
-    constructor(address _verifier) Solve3Verify(_verifier) {}
+    constructor(address _solve3Master) Solve3Verify(_solve3Master) {}
 
     function _setNumber(uint256 _number) internal {
         number = _number;

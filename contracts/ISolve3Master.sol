@@ -2,7 +2,7 @@
 
 pragma solidity 0.8.7;
 
-interface ISolve3Verifier {
+interface ISolve3Master {
 
     struct ProofV0 {
         bytes32 s;
