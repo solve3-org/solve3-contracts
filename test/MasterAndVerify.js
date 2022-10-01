@@ -97,48 +97,6 @@ describe("Solve3", function () {
       expect(isVerified[2]).to.equal(true);
     })
 
-    it.only("should verify the message correct", async () => {
-      let version = versionsHash(0);
-      console.log("version", version);
-      let timestamp, nonce;
-      let tsNonce = await verifier.getTimestampAndNonce(account2.address);
-
-      timestamp = tsNonce[0];
-      nonce = tsNonce[1];
-      var m = {
-        "account": "0x1688C68f136F59643C8a8a66023D814e0bee6937",
-        "contract": "0xf43c980768CD390015e269ba06cB145fD440DefB",
-        "timestamp": 0x63121894,
-        "nonce": 0,
-        "ad": '0xc5d2460186f7233c927e7db2dcc703c0e500b653ca82273b7bfad8045d85a470'
-      }
-
-      const ad = await verifier.getId("");
-      console.log(ad)
-      // const encoded = await encodeBackendProof({ account: account2.address, contract: owner.address, timestamp, nonce, ad: ad });
-      const encoded = await encodeBackendProof(m);
-      const msg = await keccak256(encoded);
-      const sig = await signMsg(account1, msg);
-
-      const proof = encodeChainProof(
-        {
-          s: sig.s,
-          r: sig.r,
-          v: sig.v,
-          nonce: m.nonce,
-          timestamp: m.timestamp,
-          account: m.account,
-          ad: ad,
-        }
-      )
-        console.log(proof)
-      await mineBlock();
-
-      const isVerified = await verifier.callStatic.verifyProof(version, proof);
-
-      expect(isVerified[2]).to.equal(true);
-    })
-
     it("should verify the message incorrect with wrong value", async () => {
       let version = versionsHash(0);
 
