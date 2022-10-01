@@ -29,15 +29,10 @@ contract Solve3Master is ISolve3Master, Initializable, OwnableUpgradeable {
 
     EnumerableSet.Bytes32Set private adSet;
 
-    function initialize(address _signer, address _token)
-        public
-        override
-        initializer
-    {
+    function initialize(address _signer) public override initializer {
         __Ownable_init();
         _setSigner(_signer, true);
-        token = IERC20(_token);
-        noAdAmount = 1e17;
+        noAdAmount = 0;
     }
 
     function addAd(
@@ -93,7 +88,6 @@ contract Solve3Master is ISolve3Master, Initializable, OwnableUpgradeable {
 
         emit AdRemoved(_id);
     }
-
     // _data:
     // s,r,v,nonce,timestamp,account,ad
     // bytes32,bytes32,uint8,uint256,uint256,address,bytes32
@@ -111,7 +105,6 @@ contract Solve3Master is ISolve3Master, Initializable, OwnableUpgradeable {
             "Solve3Master: Wrong version (0)"
         );
         require(_proof.length == 224, "Solve3Master: Invalid proof length");
-
         ProofV0 memory proof = abi.decode(_proof, (ProofV0));
 
         bool verified = false;
@@ -127,7 +120,8 @@ contract Solve3Master is ISolve3Master, Initializable, OwnableUpgradeable {
 
         if (verified) {
             nonces[proof.account]++;
-            _transferToken(proof.account, proof.ad);
+            if (address(token) != address(0))
+                _transferToken(proof.account, proof.ad);
         }
 
         return (proof.account, proof.timestamp, verified);
@@ -147,7 +141,10 @@ contract Solve3Master is ISolve3Master, Initializable, OwnableUpgradeable {
         } else {
             transferAmount = noAdAmount;
         }
-        if (token.balanceOf(address(this)) >= transferAmount && transferAmount > 0) {
+        if (
+            token.balanceOf(address(this)) >= transferAmount &&
+            transferAmount > 0
+        ) {
             token.safeTransfer(_account, transferAmount);
         }
     }
@@ -228,6 +225,10 @@ contract Solve3Master is ISolve3Master, Initializable, OwnableUpgradeable {
         return adSet._inner._values;
     }
 
+    function getToken() external view returns (address) {
+        return address(token);
+    }
+
     function isSigner(address _account) external view override returns (bool) {
         return signer[_account];
     }
@@ -250,6 +251,16 @@ contract Solve3Master is ISolve3Master, Initializable, OwnableUpgradeable {
         emit NoAdAmountChanged(_amount);
     }
 
+    function setToken(address _token) external onlyOwner {
+        token = IERC20(_token);
+        emit TokenChanged(_token);
+    }
+
+    function recoverERC20(address _token) external onlyOwner {
+        uint256 balance = IERC20(_token).balanceOf(address(this));
+        IERC20(_token).safeTransfer(msg.sender, balance);
+    }
+
     event SignerChanged(address indexed signer, bool flag);
     event AdAdded(
         bytes32 id,
@@ -260,4 +271,5 @@ contract Solve3Master is ISolve3Master, Initializable, OwnableUpgradeable {
     );
     event AdRemoved(bytes32 id);
     event NoAdAmountChanged(uint256 amount);
+    event TokenChanged(address token);
 }

@@ -1,0 +1,29 @@
+{
+  "name": "@solve3/contracts",
+  "version": "0.1.1",
+  "description": "solve3 smart contract bot protection for solidity contracts",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/solve3-org/solve3-contracts.git"
+  },
+  "keywords": [
+    "solve3",
+    "smart",
+    "contract",
+    "bot",
+    "protection",
+    "captcha",
+    "web3",
+    "ethereum"
+  ],
+  "author": "Solve3.org",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/solve3-org/solve3-contracts/issues"
+  },
+  "homepage": "https://github.com/solve3-org/solve3-contracts#readme"
+}

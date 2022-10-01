@@ -14,7 +14,7 @@ interface ISolve3Master {
         bytes32 ad;
     }
     
-    function initialize(address _signer, address _token) external;
+    function initialize(address _signer) external;
 
     function verifyProof(bytes32 version, bytes memory _proof) external returns (address account, uint256 timestamp, bool verified);
 

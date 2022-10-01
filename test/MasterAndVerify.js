@@ -17,7 +17,8 @@ describe("Solve3", function () {
 
     const solve3MasterFactory = await ethers.getContractFactory("Solve3Master");
     const solve3Master = await solve3MasterFactory.deploy();
-    await solve3Master.initialize(account1.address, token.address);
+    await solve3Master.initialize(account1.address);
+    await solve3Master.setToken(token.address);
 
     await token.transfer(solve3Master.address, ethers.utils.parseEther("1000000"));
 
@@ -45,7 +46,7 @@ describe("Solve3", function () {
     })
 
     it("should fail when try to initialize a second time", async () => {
-      await expect(verifier.initialize(account1.address, token.address)).to.be.revertedWith("Initializable: contract is already initialized");
+      await expect(verifier.initialize(account1.address)).to.be.revertedWith("Initializable: contract is already initialized");
     })
 
     it("should return the right nonce", async function () {
@@ -71,7 +72,7 @@ describe("Solve3", function () {
 
       timestamp = tsNonce[0];
       nonce = tsNonce[1];
-
+      
       const ad = await verifier.getId("0x");
       const encoded = await encodeBackendProof({ account: account2.address, contract: owner.address, timestamp, nonce, ad: ad });
       const msg = await keccak256(encoded);
@@ -89,6 +90,48 @@ describe("Solve3", function () {
         }
       )
 
+      await mineBlock();
+
+      const isVerified = await verifier.callStatic.verifyProof(version, proof);
+
+      expect(isVerified[2]).to.equal(true);
+    })
+
+    it.only("should verify the message correct", async () => {
+      let version = versionsHash(0);
+      console.log("version", version);
+      let timestamp, nonce;
+      let tsNonce = await verifier.getTimestampAndNonce(account2.address);
+
+      timestamp = tsNonce[0];
+      nonce = tsNonce[1];
+      var m = {
+        "account": "0x1688C68f136F59643C8a8a66023D814e0bee6937",
+        "contract": "0xf43c980768CD390015e269ba06cB145fD440DefB",
+        "timestamp": 0x63121894,
+        "nonce": 0,
+        "ad": '0xc5d2460186f7233c927e7db2dcc703c0e500b653ca82273b7bfad8045d85a470'
+      }
+
+      const ad = await verifier.getId("");
+      console.log(ad)
+      // const encoded = await encodeBackendProof({ account: account2.address, contract: owner.address, timestamp, nonce, ad: ad });
+      const encoded = await encodeBackendProof(m);
+      const msg = await keccak256(encoded);
+      const sig = await signMsg(account1, msg);
+
+      const proof = encodeChainProof(
+        {
+          s: sig.s,
+          r: sig.r,
+          v: sig.v,
+          nonce: m.nonce,
+          timestamp: m.timestamp,
+          account: m.account,
+          ad: ad,
+        }
+      )
+        console.log(proof)
       await mineBlock();
 
       const isVerified = await verifier.callStatic.verifyProof(version, proof);
