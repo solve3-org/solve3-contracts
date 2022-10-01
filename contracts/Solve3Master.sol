@@ -41,15 +41,12 @@ contract Solve3Master is ISolve3Master, Initializable, OwnableUpgradeable {
         uint256 _totalSolves,
         uint256 _amountPerSolve
     ) external onlyOwner {
-        require(_totalSolves > 0, "Total solves must be greater than 0");
-        require(_amountPerSolve > 0, "Amount per solve must be greater than 0");
+        if (_totalSolves == 0) revert ZeroSolves();
+        if (_amountPerSolve == 0) revert ZeroAmountPerSolves();
 
         bytes32 identifier = keccak256(abi.encodePacked(_ipfs));
 
-        require(
-            ads[identifier].creator == address(0),
-            "Ad already exists or wrong creator"
-        );
+        if (adSet.contains(identifier)) revert AdAlreadyExists();
 
         token.safeTransferFrom(
             msg.sender,
@@ -78,7 +75,7 @@ contract Solve3Master is ISolve3Master, Initializable, OwnableUpgradeable {
     }
 
     function removeAd(bytes32 _id) external onlyOwner {
-        require(adSet.contains(_id), "Ad does not exist");
+        if (!adSet.contains(_id)) revert AdDoesNotExist();
 
         Ad storage ad = ads[_id];
         token.safeTransfer(msg.sender, ad.totalSolves * ad.amountPerSolve);
@@ -88,6 +85,7 @@ contract Solve3Master is ISolve3Master, Initializable, OwnableUpgradeable {
 
         emit AdRemoved(_id);
     }
+
     // _data:
     // s,r,v,nonce,timestamp,account,ad
     // bytes32,bytes32,uint8,uint256,uint256,address,bytes32
@@ -100,11 +98,10 @@ contract Solve3Master is ISolve3Master, Initializable, OwnableUpgradeable {
             bool
         )
     {
-        require(
-            _version == keccak256(abi.encodePacked("SOLVE3.V0")),
-            "Solve3Master: Wrong version (0)"
-        );
-        require(_proof.length == 224, "Solve3Master: Invalid proof length");
+        if (_version != keccak256(abi.encodePacked("SOLVE3.V0")))
+            revert InvalidVersion();
+        if (_proof.length != 224) revert InvalidProofLength();
+
         ProofV0 memory proof = abi.decode(_proof, (ProofV0));
 
         bool verified = false;
@@ -123,7 +120,6 @@ contract Solve3Master is ISolve3Master, Initializable, OwnableUpgradeable {
             if (address(token) != address(0))
                 _transferToken(proof.account, proof.ad);
         }
-
         return (proof.account, proof.timestamp, verified);
     }
 
@@ -261,6 +257,8 @@ contract Solve3Master is ISolve3Master, Initializable, OwnableUpgradeable {
         IERC20(_token).safeTransfer(msg.sender, balance);
     }
 
+    // EVENTS
+
     event SignerChanged(address indexed signer, bool flag);
     event AdAdded(
         bytes32 id,
@@ -272,4 +270,12 @@ contract Solve3Master is ISolve3Master, Initializable, OwnableUpgradeable {
     event AdRemoved(bytes32 id);
     event NoAdAmountChanged(uint256 amount);
     event TokenChanged(address token);
+
+    // ERRORS
+    error ZeroSolves();
+    error ZeroAmountPerSolves();
+    error AdAlreadyExists();
+    error AdDoesNotExist();
+    error InvalidVersion();
+    error InvalidProofLength();
 }
