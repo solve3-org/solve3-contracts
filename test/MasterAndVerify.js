@@ -207,7 +207,7 @@ describe("Solve3", function () {
     })
 
     it("should fail when try to set number when solve3 is enabled", async () => {
-      await expect(example1.setNumber2(1)).to.be.revertedWith("Solution3Verify: Verification is not disabled")
+      await expect(example1.setNumber2(1)).to.be.revertedWith("Solve3VerifySolve3IsNotDisabled()")
     })
 
     it("should success when try to set number when solve3 is disabled", async () => {
@@ -284,8 +284,8 @@ describe("Solve3", function () {
 
       await mineBlock();
 
-      await expect(example1.connect(account2).setNumber(proof0, 2)).to.be.revertedWith("Solve3Verify: Unable to verify message");
-      await expect(example1.connect(account2).setNumber(proof1, 2)).to.be.revertedWith("Solve3Verify: Unable to verify message");
+      await expect(example1.connect(account2).setNumber(proof0, 2)).to.be.revertedWith("Solve3VerifyUnableToVerify()");
+      await expect(example1.connect(account2).setNumber(proof1, 2)).to.be.revertedWith("Solve3VerifyUnableToVerify()");
 
       it("should fail to set number when using two times same msg", async () => {
         let timestamp, nonce;
@@ -316,7 +316,7 @@ describe("Solve3", function () {
         await example1.connect(account2).setNumber(proof, 2);
         expect(await example1.number()).to.eq(2)
 
-        await expect(example1.connect(account2).setNumber(proof, 2)).to.be.revertedWith("Solve3Verify: Unable to verify message");
+        await expect(example1.connect(account2).setNumber(proof, 2)).to.be.revertedWith("Solve3VerifyUnableToVerify()");
       })
 
       it("should fail to set number when increasing time by 6min", async () => {
@@ -540,7 +540,7 @@ describe("Solve3", function () {
       )
 
       await mineBlock();
-      await expect(example2.connect(account2).setNumber(proof, 4)).to.be.revertedWith("Solve3Verify: Message was signed too early");
+      await expect(example2.connect(account2).setNumber(proof, 4)).to.be.revertedWith("Solve3VerifyMsgSignedTooEarly()");
     })
 
     it("should fail to set number when increasing time by 100s", async () => {
@@ -574,7 +574,7 @@ describe("Solve3", function () {
       await ethers.provider.send('evm_increaseTime', [100]);
       await ethers.provider.send('evm_mine');
 
-      await expect(example2.connect(account2).setNumber(proof, 3)).to.be.revertedWith("Solve3Verify: Message was signed too early");
+      await expect(example2.connect(account2).setNumber(proof, 3)).to.be.revertedWith("Solve3VerifyMsgSignedTooEarly()");
     })
 
   })

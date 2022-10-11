@@ -20,36 +20,21 @@ abstract contract Solve3Verify {
             (address account, uint256 timestamp, bool verified) = solve3Master
             .verifyProof(_version(), _proof);
             
-            require(
-                verified,
-                "Solve3Verify: Unable to verify message"
-            );
-            require(
-                account == msg.sender,
-                "Solve3Verify: Sender and solver do not match"
-            );
-            require(
-                timestamp >= validFrom(),
-                "Solve3Verify: Message was signed too early"
-            );
-            require(
-                timestamp + validPeriod() >= block.timestamp,
-                "Solve3Verify: Signature is no longer valid"
-            );
+            if(!verified) revert Solve3VerifyUnableToVerify();
+            if(account != msg.sender) revert Solve3VerifyAddressMismatch();
+            if(timestamp < validFrom()) revert Solve3VerifyMsgSignedTooEarly();
+            if(timestamp + validPeriod() < block.timestamp) revert Solve3VerifySignatureInvalid();
         }
         _;
     }
 
     modifier solve3IsDisabled() {
-        require(
-            solve3Disabled,
-            "Solution3Verify: Verification is not disabled"
-        );
+        if (!solve3Disabled) revert Solve3VerifySolve3IsNotDisabled();
         _;
     }
 
     modifier solve3IsNotDisabled() {
-        require(!solve3Disabled, "Solution3Verify: Verification is disabled");
+        if (solve3Disabled) revert Solve3VerifySolve3IsDisabled();
         _;
     }
 
@@ -85,4 +70,11 @@ abstract contract Solve3Verify {
     }
 
     event Paused(bool _paused);
+
+    error Solve3VerifySolve3IsDisabled();
+    error Solve3VerifySolve3IsNotDisabled();
+    error Solve3VerifyUnableToVerify();
+    error Solve3VerifyAddressMismatch();
+    error Solve3VerifyMsgSignedTooEarly();
+    error Solve3VerifySignatureInvalid();
 }
